@@ -1,0 +1,57 @@
+{
+  "name": "vacuum",
+  "displayName": "vacuum",
+  "publisher": "pb33f",
+  "description": "vacuum is the world's fastest OpenAPI linter and quality analysis tool.",
+  "author": "Quobix",
+  "license": "MIT",
+  "icon": "square-icon.png",
+  "homepage": "https://quobix.com/vacuum/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daveshanley/vacuum.git"
+  },
+  "version": "0.0.5",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vacuum.lint",
+        "title": "Lint OpenAPI using vacuum"
+      },
+      {
+        "command": "vacuum.stopLint",
+        "title": "Stop Linting OpenAPI using vacuum"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "@quobix/vacuum": "^0.9.1",
+    "vscode-languageclient": "^7.0.0"
+  }
+}
