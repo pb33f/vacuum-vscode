@@ -9,8 +9,7 @@ import {
 
 export function activate(context: vscode.ExtensionContext) {
 
-    let launcher = os.platform() === 'win32' ? 'vacuum' : 'vacuum';
-    //let script = context.asAbsolutePath(path.join('node_modules', '@quobix/vacuum', 'bin', launcher));
+    let launcher = os.platform() === 'win32' ? 'vacuum.cmd' : 'vacuum';
 
     let ServerOptions: ServerOptions = {
         run: {command: launcher, args:['language-server']},
