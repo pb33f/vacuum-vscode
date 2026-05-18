@@ -29,13 +29,19 @@ brew install daveshanley/vacuum/vacuum
 
 ### Enabling vacuum
 
-Open up the command palette and type `vacuum` and select `Lint OpenAPI using vacuum`.
+vacuum starts automatically when you open YAML or JSON files.
+
+You can also open up the command palette and type `vacuum` and select `Lint OpenAPI using vacuum`.
 
 YAML and JSON files will be automatically detected (if they are OpenAPI) and linted using vacuum.
 
 ### Disabling vacuum
 
 If you want to disable vacuum, open up the command palette and type `vacuum` and select `Stop Linting OpenAPI using vacuum`.
+
+### Executable path
+
+The extension uses the `vacuum` executable installed on your machine. If VSCode cannot find `vacuum` on `PATH`, set `vacuum.executablePath` to the full path of the executable.
 
 ### Configuration
 
@@ -50,6 +56,5 @@ Learn more about vacuum by visiting the [vacuum documentation](https://quobix.co
 
 [vacuum documentation](https://quobix.com/vacuum/)
 [vacuum online demo](https://quobix.com/vacuum/demo)
-
 
 
