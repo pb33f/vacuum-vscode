@@ -18,7 +18,10 @@
   "categories": [
     "Linters"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:json"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -30,12 +33,29 @@
         "command": "vacuum.stopLint",
         "title": "Stop Linting OpenAPI using vacuum"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "vacuum",
+      "properties": {
+        "vacuum.languageServer.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Start the vacuum language server automatically for YAML and JSON files."
+        },
+        "vacuum.executablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the vacuum executable. Leave empty to auto-detect vacuum on PATH."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "package:vsix": "vsce package",
+    "publish:openvsx": "ovsx publish --skip-duplicate",
     "pretest": "npm run compile",
     "test": "vscode-test"
   },
@@ -48,10 +68,10 @@
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8",
     "eslint": "^8.54.0",
+    "ovsx": "^0.10.12",
     "typescript": "^5.3.2"
   },
   "dependencies": {
-    "@quobix/vacuum": "^0.9.1",
     "vscode-languageclient": "^7.0.0"
   }
 }
