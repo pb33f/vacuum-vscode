@@ -1,10 +1,7 @@
-name: Publish Open VSX
+name: Publish Extensions
 
 on:
   workflow_dispatch:
-  release:
-    types:
-      - published
   push:
     tags:
       - "v*"
@@ -29,6 +26,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set package version from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "${package_version}" = "${tag_version}" ]; then
+            echo "Package version already matches tag ${GITHUB_REF_NAME}."
+            exit 0
+          fi
+
+          npm version --no-git-tag-version "${tag_version}"
+
       - name: Read package version
         id: package
         run: |
@@ -45,3 +55,8 @@ jobs:
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: npm run publish:openvsx -- "vacuum-${{ steps.package.outputs.version }}.vsix" -p "$OVSX_PAT"
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npm run publish:marketplace -- "vacuum-${{ steps.package.outputs.version }}.vsix"

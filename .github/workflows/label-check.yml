@@ -1,0 +1,29 @@
+name: Release Label Check
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+
+permissions:
+  pull-requests: read
+
+jobs:
+  require-release-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify release label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+            const allowed = ['release/patch', 'release/minor', 'release/major'];
+            const releaseLabels = labels.filter((label) => allowed.includes(label));
+            if (releaseLabels.length !== 1) {
+              const found = releaseLabels.length ? releaseLabels.join(', ') : 'none';
+              core.setFailed(`Add exactly one release label to this PR: ${allowed.join(', ')}. Found: ${found}`);
+            }

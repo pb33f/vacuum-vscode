@@ -56,6 +56,7 @@
     "watch": "tsc -watch -p ./",
     "package:vsix": "vsce package",
     "publish:openvsx": "ovsx publish --skip-duplicate",
+    "publish:marketplace": "vsce publish --skip-duplicate --packagePath",
     "pretest": "npm run compile",
     "test": "vscode-test"
   },
@@ -67,6 +68,7 @@
     "@typescript-eslint/parser": "^6.13.1",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^3.9.1",
     "eslint": "^8.54.0",
     "ovsx": "^0.10.12",
     "typescript": "^5.3.2"
