@@ -6,7 +6,8 @@ on:
       - main
 
 permissions:
-  contents: read
+  actions: write
+  contents: write
   pull-requests: read
 
 concurrency:
@@ -123,22 +124,11 @@ jobs:
 
           echo "create=true" >> "${GITHUB_OUTPUT}"
 
-      - name: Verify release token
-        if: steps.tag-state.outputs.create == 'true'
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        shell: bash
-        run: |
-          if [ -z "${GH_PAT}" ]; then
-            echo "GH_PAT is required to push release tags from this workflow." >&2
-            echo "Provide a fine-grained personal access token with Contents: Read and write via the GH_PAT Actions secret." >&2
-            exit 1
-          fi
-
       - name: Create and push tag
+        id: push-tag
         if: steps.tag-state.outputs.create == 'true'
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           RELEASE_PR_NUMBER: ${{ steps.pr.outputs.number }}
           RELEASE_PR_TITLE: ${{ steps.pr.outputs.title }}
           RELEASE_LEVEL: ${{ steps.pr.outputs.level }}
@@ -178,12 +168,13 @@ jobs:
             echo "v${major}.${minor}.${patch}"
           }
 
-          remote="https://${GITHUB_ACTOR}:${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+          remote="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git fetch --force --tags "${remote}"
 
           existing="$(git tag --points-at HEAD -l 'v*' --sort=-version:refname | head -n 1)"
           if [ -n "${existing}" ]; then
             echo "Tag ${existing} already points at this commit, nothing to do."
+            echo "tag=${existing}" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
 
@@ -191,3 +182,12 @@ jobs:
           tag_message="${tag}: PR #${RELEASE_PR_NUMBER} ${RELEASE_PR_TITLE}"
           git tag -a "${tag}" -m "${tag_message}"
           git push "${remote}" "${tag}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Dispatch publish workflow
+        if: steps.tag-state.outputs.create == 'false' || steps.push-tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.push-tag.outputs.tag || steps.tag-state.outputs.tag }}
+        shell: bash
+        run: gh workflow run .github/workflows/open-vsx.yml --ref "${RELEASE_TAG}"
