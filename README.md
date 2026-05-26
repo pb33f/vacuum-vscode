@@ -48,7 +48,30 @@ The extension uses the `vacuum` executable installed on your machine. If VSCode 
 To configure vacuum to use your own rules, rulesets and custom functions, you can 
 [provide a configuration file](https://quobix.com/vacuum/configuring).
 
-To change the configuration, you will need to disable and re-enable vacuum.
+You can also configure the extension from VS Code:
+
+1. Open the command palette.
+2. Run `Select vacuum Ruleset` or `Select vacuum Ignore File`.
+3. Pick the ruleset or ignore file to save it into the workspace settings.
+
+The extension supports these workspace settings:
+
+```json
+{
+  "vacuum.ruleset": "path/to/ruleset.yaml",
+  "vacuum.ignoreFile": "path/to/ignore.yaml",
+  "vacuum.functions": "path/to/functions",
+  "vacuum.base": "path/to/api/root",
+  "vacuum.remote": true,
+  "vacuum.skipCheck": false,
+  "vacuum.timeout": 5,
+  "vacuum.lookupTimeout": 500,
+  "vacuum.hardMode": false,
+  "vacuum.extensionRefs": false
+}
+```
+
+Configuration changes are sent to the running language server and open documents are linted again automatically.
 
 ### Documentation
 
@@ -56,5 +79,4 @@ Learn more about vacuum by visiting the [vacuum documentation](https://quobix.co
 
 [vacuum documentation](https://quobix.com/vacuum/)
 [vacuum online demo](https://quobix.com/vacuum/demo)
-
 

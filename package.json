@@ -32,6 +32,22 @@
       {
         "command": "vacuum.stopLint",
         "title": "Stop Linting OpenAPI using vacuum"
+      },
+      {
+        "command": "vacuum.selectRuleset",
+        "title": "Select vacuum Ruleset"
+      },
+      {
+        "command": "vacuum.clearRuleset",
+        "title": "Clear vacuum Ruleset"
+      },
+      {
+        "command": "vacuum.selectIgnoreFile",
+        "title": "Select vacuum Ignore File"
+      },
+      {
+        "command": "vacuum.clearIgnoreFile",
+        "title": "Clear vacuum Ignore File"
       }
     ],
     "configuration": {
@@ -45,7 +61,100 @@
         "vacuum.executablePath": {
           "type": "string",
           "default": "",
+          "scope": "machine-overridable",
           "description": "Path to the vacuum executable. Leave empty to auto-detect vacuum on PATH."
+        },
+        "vacuum.ruleset": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Path or URL to a custom vacuum or Spectral-compatible ruleset."
+        },
+        "vacuum.ignoreFile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Path to a vacuum ignore file."
+        },
+        "vacuum.functions": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Path to custom vacuum function definitions."
+        },
+        "vacuum.base": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Base URL or path to use for resolving local and remote references."
+        },
+        "vacuum.remote": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Allow local files and remote HTTP references to be resolved."
+        },
+        "vacuum.skipCheck": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Skip OpenAPI document validation before linting."
+        },
+        "vacuum.timeout": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null,
+          "minimum": 1,
+          "scope": "resource",
+          "description": "Rule execution timeout in seconds."
+        },
+        "vacuum.lookupTimeout": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null,
+          "minimum": 1,
+          "scope": "resource",
+          "description": "JSONPath node lookup timeout in milliseconds."
+        },
+        "vacuum.hardMode": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Enable all built-in rules, including OWASP rules."
+        },
+        "vacuum.extensionRefs": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null,
+          "scope": "resource",
+          "description": "Resolve $ref values inside extension objects."
         }
       }
     }

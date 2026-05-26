@@ -6,11 +6,13 @@ import {
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
-  } from 'vscode-languageclient/node';
+} from 'vscode-languageclient/node';
 
 const configSection = 'vacuum';
 const enabledSetting = 'languageServer.enabled';
 const executablePathSetting = 'executablePath';
+const rulesetSetting = 'ruleset';
+const ignoreFileSetting = 'ignoreFile';
 const isWindows = os.platform() === 'win32';
 
 let lspClient: LanguageClient | undefined;
@@ -36,6 +38,20 @@ export function activate(context: vscode.ExtensionContext) {
 		await stopLanguageServer();
 		vscode.window.showInformationMessage('vacuum has stopped linting your yaml/json files.');
 	});
+	const selectRuleset = vscode.commands.registerCommand('vacuum.selectRuleset', async () => {
+		await selectWorkspaceFileSetting(rulesetSetting, 'Select vacuum ruleset');
+	});
+	const clearRuleset = vscode.commands.registerCommand('vacuum.clearRuleset', async () => {
+		await clearWorkspaceSetting(rulesetSetting);
+		vscode.window.showInformationMessage('vacuum ruleset setting cleared.');
+	});
+	const selectIgnoreFile = vscode.commands.registerCommand('vacuum.selectIgnoreFile', async () => {
+		await selectWorkspaceFileSetting(ignoreFileSetting, 'Select vacuum ignore file');
+	});
+	const clearIgnoreFile = vscode.commands.registerCommand('vacuum.clearIgnoreFile', async () => {
+		await clearWorkspaceSetting(ignoreFileSetting);
+		vscode.window.showInformationMessage('vacuum ignore file setting cleared.');
+	});
 
 	const configWatcher = vscode.workspace.onDidChangeConfiguration(async (event) => {
 		if (!event.affectsConfiguration(`${configSection}.${enabledSetting}`) &&
@@ -49,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(lint, stopLint, configWatcher);
+	context.subscriptions.push(lint, stopLint, selectRuleset, clearRuleset, selectIgnoreFile, clearIgnoreFile, configWatcher);
 
 	if (isLanguageServerEnabled()) {
 		void startLanguageServer(false);
@@ -129,6 +145,92 @@ function getVacuumConfiguration(): vscode.WorkspaceConfiguration {
 
 function getConfigurationScope(): vscode.ConfigurationScope | undefined {
 	return vscode.window.activeTextEditor?.document ?? vscode.workspace.workspaceFolders?.[0];
+}
+
+async function selectWorkspaceFileSetting(setting: string, title: string): Promise<void> {
+	const workspaceFolder = await resolveWorkspaceFolderForUpdate();
+	if (workspaceFolder === null) {
+		return;
+	}
+	const defaultUri = workspaceFolder?.uri;
+	const selection = await vscode.window.showOpenDialog({
+		title,
+		defaultUri,
+		canSelectFiles: true,
+		canSelectFolders: false,
+		canSelectMany: false,
+		openLabel: 'Select',
+		filters: {
+			'YAML, JSON': ['yaml', 'yml', 'json'],
+			'All Files': ['*'],
+		},
+	});
+
+	if (!selection || selection.length === 0) {
+		return;
+	}
+
+	await updateWorkspaceSetting(setting, valueForWorkspaceSetting(selection[0], workspaceFolder), workspaceFolder);
+	vscode.window.showInformationMessage(`vacuum ${setting} setting updated.`);
+}
+
+async function updateWorkspaceSetting(
+	setting: string,
+	value: string | undefined,
+	workspaceFolder?: vscode.WorkspaceFolder
+): Promise<void> {
+	const configuration = vscode.workspace.getConfiguration(configSection, workspaceFolder);
+	const target = workspaceFolder
+		? vscode.ConfigurationTarget.WorkspaceFolder
+		: vscode.ConfigurationTarget.Global;
+
+	await configuration.update(setting, value, target);
+}
+
+async function clearWorkspaceSetting(setting: string): Promise<void> {
+	const workspaceFolder = await resolveWorkspaceFolderForUpdate();
+	if (workspaceFolder === null) {
+		return;
+	}
+	await updateWorkspaceSetting(setting, undefined, workspaceFolder);
+}
+
+async function resolveWorkspaceFolderForUpdate(): Promise<vscode.WorkspaceFolder | undefined | null> {
+	const activeResource = vscode.window.activeTextEditor?.document.uri;
+	if (activeResource) {
+		const activeFolder = vscode.workspace.getWorkspaceFolder(activeResource);
+		if (activeFolder) {
+			return activeFolder;
+		}
+	}
+
+	const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+	if (workspaceFolders.length <= 1) {
+		return workspaceFolders[0];
+	}
+
+	const selection = await vscode.window.showQuickPick(
+		workspaceFolders.map((folder) => ({ label: folder.name, folder })),
+		{ placeHolder: 'Select the workspace folder for the vacuum setting' }
+	);
+	return selection?.folder ?? null;
+}
+
+function valueForWorkspaceSetting(uri: vscode.Uri, workspaceFolder: vscode.WorkspaceFolder | undefined): string {
+	if (uri.scheme !== 'file') {
+		return uri.toString();
+	}
+
+	if (!workspaceFolder || workspaceFolder.uri.scheme !== 'file') {
+		return uri.fsPath;
+	}
+
+	const relative = path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
+	if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+		return relative.split(path.sep).join('/');
+	}
+
+	return uri.fsPath;
 }
 
 function getLanguageServerEnabledUpdateScope(configuration: vscode.WorkspaceConfiguration): ConfigurationUpdateScope {
