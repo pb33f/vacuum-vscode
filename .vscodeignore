@@ -5,6 +5,7 @@
 .idea/**
 src/**
 dist/**
+out/test/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md

@@ -7,6 +7,10 @@ import {
 	LanguageClientOptions,
 	ServerOptions,
 } from 'vscode-languageclient/node';
+import {
+	buildLanguageServerExecutable,
+	type ResolvedExecutable,
+} from './executable';
 
 const configSection = 'vacuum';
 const enabledSetting = 'languageServer.enabled';
@@ -16,11 +20,6 @@ const ignoreFileSetting = 'ignoreFile';
 const isWindows = os.platform() === 'win32';
 
 let lspClient: LanguageClient | undefined;
-
-interface ResolvedExecutable {
-	command: string;
-	args: string[];
-}
 
 interface ConfigurationUpdateScope {
 	target: vscode.ConfigurationTarget;
@@ -91,8 +90,8 @@ async function startLanguageServer(showReadyMessage: boolean): Promise<void> {
 	}
 
 	const serverOptions: ServerOptions = {
-		run: { command: executable.command, args: executable.args },
-		debug: { command: executable.command, args: executable.args },
+		run: executable,
+		debug: executable,
 	};
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: [{ scheme: 'file', language: 'yaml' }, { scheme: 'file', language: 'json' }],
@@ -347,14 +346,7 @@ function findFirstExistingExecutable(candidates: string[]): ResolvedExecutable |
 }
 
 function toResolvedExecutable(command: string): ResolvedExecutable {
-	const extension = path.extname(command).toLowerCase();
-	if (isWindows && (extension === '.cmd' || extension === '.bat')) {
-		return {
-			command: process.env.ComSpec ?? 'cmd.exe',
-			args: ['/d', '/s', '/c', `"${command}" language-server`],
-		};
-	}
-	return { command, args: ['language-server'] };
+	return buildLanguageServerExecutable(command);
 }
 
 function expandPath(value: string): string {
