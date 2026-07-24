@@ -167,7 +167,8 @@
     "publish:openvsx": "ovsx publish --skip-duplicate",
     "publish:marketplace": "vsce publish --skip-duplicate --packagePath",
     "pretest": "npm run compile",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "test:unit": "npm run compile && node --test out/test/executable.test.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
